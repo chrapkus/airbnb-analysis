@@ -12,3 +12,12 @@ pip install seaborn
 pip install matplotlib
 pip install scikit-learn
 ```
+
+## Project structure
+data folder - contains all the data used
+airbnb-data-analysis.ipynb - main file with all charts and data transformation
+utils.py - help file with custom made functions
+
+
+## Conclusions from the analysis
+https://medium.com/@chrapkus/what-factors-affect-airbnb-prices-in-boston-and-seattle-11c815a39622
