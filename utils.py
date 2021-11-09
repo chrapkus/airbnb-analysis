@@ -64,14 +64,21 @@ def get_val_from_list(row, column_name, value):
         val = 0.0
     return val
 
-def split_list_into_columns(df1, column_name, max_dummies_num = 10):
-    ''' Split values in columns, which contain lists (for example, amenities) '''
-    
+def split_list_into_columns(df1, column_name, max_dummies_num = 20):
+    '''
+    INPUT
+        df - pandas dataframe with column cells containing list
+        column_name - name of column with list
+        max_dummies_num - maximal number of new dummy columns created
+    OUTPUT
+        df - pandas dataframe with new dummy columns
+    '''
+  
     # get dictionary of unique values in lists across dataset rows
     values_dict = {}
     df = copy.deepcopy(df1)
     for unique_value in df[column_name].unique(): 
-        for value in unique_value.replace('[', '').replace("'", '').replace("]", '').replace('"', '').replace('{', '').replace('}', '').split(','):
+        for value in unique_value.replace(']', '').replace("'", '').replace("[", '').replace('"', '').replace('}', '').replace('{', '').split(','):
             if value in values_dict:
                 values_dict[value] = values_dict[value] + 1
             else:
