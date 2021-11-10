@@ -33,6 +33,78 @@ remove_dolar = lambda x: float(str(x).replace("$", "").replace(",", ""))
     
 remove_percent = lambda x: float(str(x).replace('%', ''))
 
+
+
+
+def line_plot(calendar, x, y, hue):
+    """
+    INPUT
+        calendar - pandas detaframe 
+        x - name of x axis
+        y - name of y axis
+        hue - column name to seperate line charts
+    OUTPUT
+        line plot with prices
+    """
+    calendar_grouped_by_date = copy.deepcopy(calendar)
+    calendar_grouped_by_date = calendar_grouped_by_date[~calendar[y].isna()].groupby([x, hue], as_index = False).mean()
+    calendar_grouped_by_date = calendar_grouped_by_date.sort_values(by=[hue])
+    calendar_grouped_by_date = calendar_grouped_by_date[[x, y, hue]]
+
+    plt.figure(figsize = (15,8))
+    ax = sns.lineplot(data=calendar_grouped_by_date, x=x, y=y, hue=hue)
+    ax.set(xlabel='x', ylabel='Avg Price')
+    plt.show()
+    
+def line_plot_percent(calendar, x, y, hue):
+    """
+    INPUT
+        calendar - pandas detaframe 
+        x - name of x axis
+        y - name of y axis
+        hue - column name to seperate line charts
+    OUTPUT
+        line plot with diffrencec in prices
+    """
+    calendar_grouped_by_date = copy.deepcopy(calendar)
+    calendar_grouped_by_day = calendar[~calendar[y].isna()].groupby([x, hue], as_index = False).mean()
+    calendar_grouped_by_day = calendar_grouped_by_day.sort_values(by=['city'])
+
+    min_boston = calendar_grouped_by_day[calendar_grouped_by_day[hue] == 'Boston'].price.min()
+    min_seattle = calendar_grouped_by_day[calendar_grouped_by_day[hue] == 'Seattle'].price.min()
+
+    calendar_grouped_by_day['price_variation'] = calendar_grouped_by_day.apply(lambda x: (x[y]/min_boston) -1  if x[hue] =='Boston' else (x[y]/min_seattle) -1,axis =1)
+    calendar_grouped_by_day.price_variation = calendar_grouped_by_day.price_variation * 100
+
+    calendar_grouped_by_day.drop(columns = ['listing_id'], inplace = True)
+    calendar_grouped_by_day
+
+    plt.figure(figsize = (15,8))
+    ax = sns.lineplot(data=calendar_grouped_by_day, x=x, y="price_variation", hue=hue)
+    ax.set(xlabel='Day of Week', ylabel='Avg Price diff')
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+    plt.show()
+    
+def bar_plot(clean_listings, city):
+    """
+    INPUT
+        clean_listings - pandas detaframe 
+        city - city we are intrested in
+    OUTPUT
+        bar plot
+        plot order
+    """
+    listings_by_area = copy.deepcopy(clean_listings)
+    listings_by_area = listings_by_area[listings_by_area.city == city].groupby(['city', 'neighbourhood_cleansed'], as_index = False).agg({'price' : 'mean', 'id' : 'count'})
+    plot_order = listings_by_area.sort_values(by='price', ascending=False).neighbourhood_cleansed.values
+    plt.figure(figsize = (15,8))
+    ax = sns.barplot(data=listings_by_area, x="neighbourhood_cleansed", y="price",order=plot_order)
+    ax.set(xlabel=f'Neighbourhood {city}', ylabel='Avg Price')
+    plt.xticks(rotation=90)
+    plt.show()
+    return plot_order
+
+
 def create_dummy_df(df, cat_cols, dummy_na):
     '''
     INPUT:
