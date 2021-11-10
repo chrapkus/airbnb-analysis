@@ -3,7 +3,10 @@ import numpy as np
 import seaborn as sns
 import datetime as dt
 import numpy as np
+
 from utils import *
+from operator import itemgetter
+
 import copy
 
 import matplotlib.pyplot as plt
@@ -53,18 +56,8 @@ def create_dummy_df(df, cat_cols, dummy_na):
             continue
     return df
 
-def get_val_from_list(row, column_name, value):
-    ''' Fill in dummy column for values '''
-    val = 0.0
-    try:
-        vals = row[column_name].replace('[', '').replace("'", '').replace("]", '').replace('"', '').replace('{', '').replace('}', '').split(',')
-        if value in vals:
-            val = 1.0
-    except:
-        val = 0.0
-    return val
 
-def split_list_into_columns(df1, column_name, max_dummies_num = 20):
+def split_list_into_columns(df1, col, max_dum = 10):
     '''
     INPUT
         df - pandas dataframe with column cells containing list
@@ -73,24 +66,28 @@ def split_list_into_columns(df1, column_name, max_dummies_num = 20):
     OUTPUT
         df - pandas dataframe with new dummy columns
     '''
-  
-    # get dictionary of unique values in lists across dataset rows
-    values_dict = {}
     df = copy.deepcopy(df1)
-    for unique_value in df[column_name].unique(): 
-        for value in unique_value.replace(']', '').replace("'", '').replace("[", '').replace('"', '').replace('}', '').replace('{', '').split(','):
-            if value in values_dict:
-                values_dict[value] = values_dict[value] + 1
+    dist_dict = {}
+    
+    # Spliting string list into acctual python list
+    df[col] = df[col].apply(lambda x: x.replace(']', '').replace("'", '').replace("[", '\
+        ').replace('"', '').replace('}', '').replace('{', '').split(',') )
+    
+    for values_list in df[col]:
+        for value in values_list:
+            if value in dist_dict:
+                dist_dict[value] += 1
             else:
-                values_dict[value] = 0
+                dist_dict[value] = 1
                 
-    values_sorted = sorted(values_dict.items(), key=lambda kv: kv[1], reverse = True)
-      
-    # split into columns
-    for value in values_sorted[: max_dummies_num]:
-        df[column_name + '_' + value[0]] = df.apply(lambda row: get_val_from_list(row, column_name, value[0]),axis=1)
-
+    new_columns = list(dict(sorted(dist_dict.items(), key = itemgetter(1), reverse = True)[:max_dum]).keys())
+    
+    for new_column in new_columns:
+        df[f'{col}_{new_column}'] = df[col].apply(lambda x: 1 if new_column in x else 0)
+       
+    df = df.drop(columns = [col])
     return df
+    
         
 def clean_fit_linear_mod(df, response_col, cat_cols, dummy_na, test_size=.3, rand_state=np.random.RandomState()):
     '''
