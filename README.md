@@ -41,3 +41,10 @@ pip install scikit-learn
 
 Full analsis is on Medium.
 https://medium.com/@chrapkus/what-factors-affect-airbnb-prices-in-boston-and-seattle-11c815a39622
+
+## References
+https://www.geeksforgeeks.org/python-decision-tree-regression-using-sklearn/
+https://towardsdatascience.com/data-cleaning-with-python-and-pandas-detecting-missing-values-3e9c6ebcf78b
+https://www.kaggle.com/airbnb/seattle/data
+https://www.kaggle.com/airbnb/boston
+
